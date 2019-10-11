@@ -7,6 +7,7 @@ import org.opensourcephysics.frames.DisplayFrame;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.util.ArrayList;
 
 public class ClusterParticlesApp extends AbstractSimulation {
     public boolean clusetCalculated = false;
@@ -14,8 +15,8 @@ public class ClusterParticlesApp extends AbstractSimulation {
     DisplayFrame display = new DisplayFrame("x", "y", "Cluster Particales");
 
     public void initialize() {
-        md.nx = control.getInt("nx"); // number of particles per row
-        md.ny = control.getInt("ny"); // number of particles per column
+        md.N_Input = control.getInt("N"); // number of particles per row
+//        md.ny = control.getInt("ny"); // number of particles per column
         md.Lx = control.getDouble("Lx");
         md.Ly = control.getDouble("Ly");
         md.dt = control.getDouble("dt");
@@ -30,7 +31,12 @@ public class ClusterParticlesApp extends AbstractSimulation {
             return;
         if(md.steadyStateAchieved) {
             control.println("Steady State Achieved!");
-
+            clusetCalculated = true;
+            ArrayList<String> clusterStrings = md.calculateClusters();
+            control.println("Cluster List:");
+            for(String clusterString : clusterStrings){
+                control.println(clusterString);
+            }
         } else {
             md.step();
         }
@@ -57,8 +63,8 @@ public class ClusterParticlesApp extends AbstractSimulation {
     }
 
     public void reset() {
-        control.setValue("nx", 4);
-        control.setValue("ny", 4);
+        control.setValue("N", 40);
+//        control.setValue("ny", 4);
         control.setAdjustableValue("Lx", 50.0);
         control.setAdjustableValue("Ly", 50.0);
         control.setAdjustableValue("dt", 0.01);

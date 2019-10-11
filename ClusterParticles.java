@@ -13,14 +13,17 @@ import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class ClusterParticles implements Drawable, ODE {
-
     public boolean dataImported = false;
     public double state[];
     public boolean edges[][];
     public double ax[], ay[];
-    public int N, nx, ny; // number of particles, number per row, number per column
+    public int N, N_Input, nx, ny; // number of particles, number per row, number per column
     public double Lx, Ly;
     public double rho = N/(Lx*Ly);
     public int steps = 0;
@@ -29,12 +32,15 @@ public class ClusterParticles implements Drawable, ODE {
     public double radius = 0.5; // radius of particles on screen
     public double initialVelocitySum;
     public boolean steadyStateAchieved = false;
+    public boolean colorized = false;
+    public Map<Integer, Color> colorMap = new HashMap<Integer, Color>();
     Verlet odeSolver = new Verlet(this);
 
 
     public void initialize() {
         if(!dataImported) {
-            N = nx * ny;
+//            N = nx * ny;
+            N = N_Input;
             t = 0;
             rho = N / (Lx * Ly);
             resetSteps();
@@ -43,6 +49,7 @@ public class ClusterParticles implements Drawable, ODE {
             ay = new double[N];
             edges = new boolean[N][N];
             steadyStateAchieved = false;
+            colorized = false;
 
             setRandomPositions();
             setRandomEdges();
@@ -119,26 +126,28 @@ public class ClusterParticles implements Drawable, ODE {
             e.printStackTrace();
         }
         dataImported = true;
+        colorized = false;
+        steadyStateAchieved = false;
     }
 
     public void setRandomPositions() { // particles placed at random, but not closer than rMinimumSquared
         double rMinimumSquared = Math.pow(2.0, 1.0/3.0);
         boolean overlap;
         for(int i = 0;i<N;++i) {
-            do {
-                overlap = false;
-                state[4*i] = Lx/2 - 3 + 6*Math.random(); // x
-                state[4*i+2] = Ly/2 - 3 + 6*Math.random(); // y
-                int j = 0;
-                while((j<i)&&!overlap) {
-                    double dx = state[4*i]-state[4*j];
-                    double dy = state[4*i+2]-state[4*j+2];
-                    if(dx*dx+dy*dy<rMinimumSquared) {
-                        overlap = true;
-                    }
-                    j++;
-                }
-            } while(overlap);
+//            do {
+//                overlap = false;
+                state[4*i] = Lx/3 + Lx*Math.random()/3; // x
+                state[4*i+2] = Ly/3 + Ly*Math.random()/3; // y
+//                int j = 0;
+//                while((j<i)&&!overlap) {
+//                    double dx = state[4*i]-state[4*j];
+//                    double dy = state[4*i+2]-state[4*j+2];
+//                    if(dx*dx+dy*dy<rMinimumSquared) {
+//                        overlap = true;
+//                    }
+//                    j++;
+//                }
+//            } while(overlap);
         }
     }
 
@@ -152,22 +161,14 @@ public class ClusterParticles implements Drawable, ODE {
                 double dx = state[4*i]-state[4*j];
                 double dy = state[4*i+2]-state[4*j+2];
                 double r = Math.abs(dx*dx+dy*dy);
-//                if(r2 == 0){
-//                    r2 = 0.01;
-//                }
-//                double oneOverR2 = 1.0/r2;
-//                double oneOverR6 = oneOverR2*oneOverR2*oneOverR2;
                 double fOverR; //= 48.0*oneOverR6*(oneOverR6/*-0.5*/)*oneOverR2;
 
-//                double multiplyer;
                 if(edges[i][j]){
-                    fOverR = -2*r;
+                    fOverR = -2*Math.sqrt(r);
                 } else {
-                    r = r/5;
-                    fOverR = 250/(r);
+//                    r = r/8;
+                    fOverR = 2000/(r*r+0.1);
                 }
-
-//                fOverR = 48.0*oneOverR6*multiplyer*oneOverR2;
 
                 double fx = fOverR*dx; // force in x-direction
                 double fy = fOverR*dy; // force in y-direction
@@ -208,7 +209,7 @@ public class ClusterParticles implements Drawable, ODE {
                     newVelocitySum += Math.abs(state[4*i+1]);
                     newVelocitySum += Math.abs(state[4*i+3]);
                 }
-                if(newVelocitySum/initialVelocitySum < 0.005)
+                if(newVelocitySum/initialVelocitySum < 0.001)
                     steadyStateAchieved = true;
             }
         }
@@ -239,6 +240,8 @@ public class ClusterParticles implements Drawable, ODE {
 
         g.setColor(Color.red);
         for(int i = 0;i<N;i++) {
+            if(colorized)
+                g.setColor(colorMap.get(i));
             int xpix = panel.xToPix(state[4*i])-pxRadius;
             int ypix = panel.yToPix(state[4*i+2])-pyRadius;
             g.fillOval(xpix, ypix, 2*pxRadius, 2*pyRadius);
@@ -266,5 +269,96 @@ public class ClusterParticles implements Drawable, ODE {
             rate[4*i+3] = ay[i];
         }
         rate[4*N] = 1; // dt/dt = 1
+    }
+
+    public ArrayList<String> calculateClusters(){
+        ArrayList<Integer> unexplored = new ArrayList<Integer>();
+        ArrayList<Integer> explored = new ArrayList<Integer>();
+
+        ArrayList<ArrayList<Integer>> clusters = new ArrayList<ArrayList<Integer>>();
+
+        double avarageDistance = 0;
+
+        for(int i = 0; i < N; ++i){
+            unexplored.add(i);
+            for(int j = i+1; j < N; ++j)
+                avarageDistance += pointDistance(i,j);
+        }
+
+        double pairCount = N * (N-1)/2;
+        avarageDistance = avarageDistance/pairCount;
+
+        double Zeta = 2*avarageDistance/log2(N);
+
+        int currentHeadIndex;
+
+        while(!unexplored.isEmpty()){
+            ArrayList<Integer> cluster = new ArrayList<Integer>();
+            currentHeadIndex = unexplored.remove(0);
+            cluster.add(currentHeadIndex);
+            while(true){
+                int index = nextClusterPoint(currentHeadIndex, Zeta, unexplored);
+                if(index == -1)
+                    break;
+                cluster.add(unexplored.remove(index));
+            }
+            clusters.add(cluster);
+        }
+
+        ArrayList<String> result = new ArrayList<String>();
+
+        for(int i = 0; i < clusters.size(); ++i){
+            Color clusterColor = getRandomColor();
+            String resultString = "{ ";
+            for(Integer index : clusters.get(i)) {
+                resultString +=  index + ", ";
+                colorMap.put(index,clusterColor);
+            }
+            resultString+="}";
+            result.add(resultString);
+
+        }
+
+        colorized = true;
+        return result;
+    }
+
+    public int nextClusterPoint(int headIndex, double Zeta, ArrayList<Integer> unexplored){
+        int resultIndex = -1;
+
+        for(int index = 0; index < unexplored.size(); ++index){
+            if(pointDistance(headIndex, unexplored.get(index)) < Zeta){
+                resultIndex = index;
+            }
+        }
+
+        if(resultIndex == -1) return resultIndex;
+
+        for(int index = 0; index < unexplored.size(); ++index){
+            if(index != resultIndex && pointDistance(unexplored.get(resultIndex), unexplored.get(index)) < (Zeta/2) ){
+                resultIndex = index;
+            }
+        }
+        return resultIndex;
+    }
+
+    public double pointDistance(int index1, int index2){
+        if(index1 >= N || index1 < 0 ||  index2 >= N || index2 < 0) return Integer.MAX_VALUE;
+        double dx2 = Math.pow(state[4*index1] - state[4*index2], 2);
+        double dy2 = Math.pow(state[4*index1+2] - state[4*index2+2], 2);
+        return Math.sqrt(dx2+dy2);
+    }
+
+    public static double log2(int x)
+    {
+        return (Math.log(x) / Math.log(2));
+    }
+
+    public static Color getRandomColor(){
+        Random rand = new Random();
+        float r = rand.nextFloat();
+        float g = rand.nextFloat();
+        float b = rand.nextFloat();
+        return (new Color(r, g, b));
     }
 }
