@@ -1,4 +1,6 @@
 # Cluster-Analysis
+Don't forget to add 'json-simple' in pom.xml as the depencdency for project
+
 Before running program import the open source physics library into project
 
 To create an import file call randomDataGenerator.js script
