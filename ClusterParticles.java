@@ -20,6 +20,7 @@ import java.util.Random;
 
 public class ClusterParticles implements Drawable, ODE {
     public boolean dataImported = false;
+    public double edgeProbability;
     public double state[];
     public boolean edges[][];
     public double ax[], ay[];
@@ -73,7 +74,7 @@ public class ClusterParticles implements Drawable, ODE {
         for(int i = 0;i<N-1;i++) {
             for(int j = i+1;j<N;j++) {
                 double randomNumber = Math.random();
-                if(randomNumber < 0.3){
+                if(randomNumber < edgeProbability){
                     edges[i][j] = true;
                     edges[j][i] = true;
                 }
@@ -209,7 +210,8 @@ public class ClusterParticles implements Drawable, ODE {
                     newVelocitySum += Math.abs(state[4*i+1]);
                     newVelocitySum += Math.abs(state[4*i+3]);
                 }
-                if(newVelocitySum/initialVelocitySum < 0.001)
+//                System.out.println("newVelocitySum/initialVelocitySum -> "+newVelocitySum/initialVelocitySum);
+                if(newVelocitySum/initialVelocitySum < 0.0005)
                     steadyStateAchieved = true;
             }
         }
@@ -296,12 +298,13 @@ public class ClusterParticles implements Drawable, ODE {
             ArrayList<Integer> cluster = new ArrayList<Integer>();
             currentHeadIndex = unexplored.remove(0);
             cluster.add(currentHeadIndex);
-            while(true){
-                int index = nextClusterPoint(currentHeadIndex, Zeta, unexplored);
-                if(index == -1)
-                    break;
-                cluster.add(unexplored.remove(index));
-            }
+//            while(true){
+//                int index = nextClusterPoint(currentHeadIndex, Zeta, unexplored, cluster);
+////                if(index == -1)
+//                    break;
+//                cluster.add(unexplored.remove(index));
+//            }
+            addClusterPoints(currentHeadIndex,Zeta,unexplored,cluster);
             clusters.add(cluster);
         }
 
@@ -323,23 +326,30 @@ public class ClusterParticles implements Drawable, ODE {
         return result;
     }
 
-    public int nextClusterPoint(int headIndex, double Zeta, ArrayList<Integer> unexplored){
-        int resultIndex = -1;
+    public void addClusterPoints(int headIndex, double Zeta, ArrayList<Integer> unexplored, ArrayList<Integer> cluster){
+//        int resultIndex = -1;
 
-        for(int index = 0; index < unexplored.size(); ++index){
-            if(pointDistance(headIndex, unexplored.get(index)) < Zeta){
-                resultIndex = index;
+        for(int i = 0; i < N; ++i){
+            if(unexplored.contains(i) && headIndex != i && edges[headIndex][i] && pointDistance(headIndex,i) < Zeta){
+                unexplored.remove(unexplored.indexOf(i));
+                cluster.add(i);
+                addClusterPoints(i,Zeta*0.75, unexplored, cluster);
             }
         }
-
-        if(resultIndex == -1) return resultIndex;
-
-        for(int index = 0; index < unexplored.size(); ++index){
-            if(index != resultIndex && pointDistance(unexplored.get(resultIndex), unexplored.get(index)) < (Zeta/2) ){
-                resultIndex = index;
-            }
-        }
-        return resultIndex;
+//        for(int index = 0; index < unexplored.size(); ++index){
+//            if(pointDistance(headIndex, unexplored.get(index)) < Zeta){
+//                resultIndex = index;
+//            }
+//        }
+//
+//        if(resultIndex == -1) return resultIndex;
+//
+//        for(int index = 0; index < unexplored.size(); ++index){
+//            if(index != resultIndex && pointDistance(unexplored.get(resultIndex), unexplored.get(index)) < (Zeta/2) ){
+//                resultIndex = index;
+//            }
+//        }
+//        return resultIndex;
     }
 
     public double pointDistance(int index1, int index2){

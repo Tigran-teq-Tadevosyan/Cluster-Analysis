@@ -16,7 +16,7 @@ public class ClusterParticlesApp extends AbstractSimulation {
 
     public void initialize() {
         md.N_Input = control.getInt("N"); // number of particles per row
-//        md.ny = control.getInt("ny"); // number of particles per column
+        md.edgeProbability = control.getDouble("Edge Probability");
         md.Lx = control.getDouble("Lx");
         md.Ly = control.getDouble("Ly");
         md.dt = control.getDouble("dt");
@@ -64,7 +64,7 @@ public class ClusterParticlesApp extends AbstractSimulation {
 
     public void reset() {
         control.setValue("N", 40);
-//        control.setValue("ny", 4);
+        control.setValue("Edge Probability", 0.3);
         control.setAdjustableValue("Lx", 50.0);
         control.setAdjustableValue("Ly", 50.0);
         control.setAdjustableValue("dt", 0.01);
