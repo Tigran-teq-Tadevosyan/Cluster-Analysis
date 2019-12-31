@@ -41,5 +41,3 @@ var json = JSON.stringify(data);
 console.log(`Data: ${data}`);
 
 fs.writeFile(dataFileName, json, 'utf8', ()=>{});
-
-//console.log(`${dataFileName}, ${pointCount}, ${edgeProbability}`);

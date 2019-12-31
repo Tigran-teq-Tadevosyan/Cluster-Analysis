@@ -70,7 +70,7 @@ public class ClusterParticlesApp extends AbstractSimulation {
         control.setAdjustableValue("dt", 0.01);
         enableStepsPerDisplay(true);
         clusetCalculated = false;
-        super.setStepsPerDisplay(10);  // draw configurations every 10 steps
+        super.setStepsPerDisplay(20);  // draw configurations every 10 steps
         display.setSquareAspect(true); // so particles will appear as circular disks
     }
 

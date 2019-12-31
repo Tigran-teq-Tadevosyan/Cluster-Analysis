@@ -24,6 +24,7 @@ public class ClusterParticles implements Drawable, ODE {
     public double state[];
     public boolean edges[][];
     public double ax[], ay[];
+    public String[] labels;
     public int N, N_Input, nx, ny; // number of particles, number per row, number per column
     public double Lx, Ly;
     public double rho = N/(Lx*Ly);
@@ -34,6 +35,7 @@ public class ClusterParticles implements Drawable, ODE {
     public double initialVelocitySum;
     public boolean steadyStateAchieved = false;
     public boolean colorized = false;
+    public final boolean withLabels = true;
     public Map<Integer, Color> colorMap = new HashMap<Integer, Color>();
     Verlet odeSolver = new Verlet(this);
 
@@ -49,6 +51,7 @@ public class ClusterParticles implements Drawable, ODE {
             ax = new double[N];
             ay = new double[N];
             edges = new boolean[N][N];
+            labels = new String[N];
             steadyStateAchieved = false;
             colorized = false;
 
@@ -99,11 +102,15 @@ public class ClusterParticles implements Drawable, ODE {
             ax = new double[N];
             ay = new double[N];
             edges = new boolean[N][N];
+            labels = new String[N];
 
             for(int i = 0;i<N;++i) {
                 JSONObject point = (JSONObject) points.get(i);
                 state[4*i] = (Double) point.get("x");   // x
                 state[4*i+2] = (Double) point.get("y"); // y
+                if(withLabels) {
+                    labels[i] = (String) point.get("label");
+                }
             }
 
 
@@ -314,7 +321,11 @@ public class ClusterParticles implements Drawable, ODE {
             Color clusterColor = getRandomColor();
             String resultString = "{ ";
             for(Integer index : clusters.get(i)) {
-                resultString +=  index + ", ";
+                if(withLabels) {
+                    resultString += labels[index] + ", ";
+                } else {
+                    resultString += index + ", ";
+                }
                 colorMap.put(index,clusterColor);
             }
             resultString+="}";

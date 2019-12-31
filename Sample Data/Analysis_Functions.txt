@@ -1,0 +1,82 @@
+public abstract class AbstractSimulation extends AbstractAnimation implements Simulation
+    [1] setControl() [31], [13], [18], [21]
+    [2] startRunning() [4], [10]
+    [3] stopRunning() [7], [10]
+    [4] startAnimation() [2], [5], [6], [40]
+    [5] startSimulation() [4]
+    [6] start() [4]
+    [7] stopAnimation() [3], [8], [9]
+    [8] stopSimulation() [7]
+    [9] stop() [7]
+    [10] stepAnimation() [2], [3], [35], [40]
+    [11] initializeAnimation() [12]
+    [12] initialize() [11]
+    [13] resetAnimation() [1], [16], [19]
+    [14] enableStepsPerDisplay() [33], [19], [20]
+    [15] setStepsPerDisplay() [33], [19]
+    [16] reset() [13]
+    [17] run() [36], [37], [39]
+
+private class ShadowControl implements SimControl
+    [18] ShadowControl() [1]
+    [19] setAdjustableValue(...) [13], [14], [15]
+    [20] removeParameter() [14]
+    [21] setLockValues() [1]
+    [22] setValue() [41]
+    [23] getInt() [38]
+    [24] getDouble() [38]
+    [25] getObject() [33]
+    [26] getString() [33]
+
+public class SimulationControl extends AnimationControl implements SimControl
+    [27] SimulationControl() [31], [32]
+    [28] setAdjustableValue() [41], [29]
+    [29] setValue() [28], [41]
+    [30] removeParameter()
+    [31] createApp() [1], [27], [44]
+
+static class SimulationControlLoader extends AnimationControlLoader
+    [32] createObject() [27]
+    [33] loadObject() [14] [15] [25] [26]
+
+public class GUIUtils
+    [34] clearDrawingFrameData() [42]
+    [35] repaintAnimatedFrames() [10]
+    [36] setAnimatedFrameIgnoreRepaint() [17]
+    [37] renderAnimatedFrames() [17]
+
+public class ClusterParticlesApp extends AbstractSimulation
+    [38] initialize() [23], [24], [50]
+    [39] doStep() [17], [57], [61]
+    [40] startRunning() [24], [4], [10], [41]
+    [41] reset() [22], [28], [29], [40]
+    [42] resetData() [34]
+    [43] importInitialData() [53]
+    [44] main() [31]
+
+public class DrawingPanel extends JPanel implements ActionListener, Renderable
+    [45] xToPix() [58]
+    [46] yToPix() [58]
+
+public class Verlet extends AbstractODESolver
+    [47] step() [57], [49], [59], [60]
+    [48] getRateCounter() [60]
+    [49] initialize() [47]
+
+public class ClusterParticles implements Drawable, ODE
+    [50] initialize() [38], [51], [52], [54], [55], [56]
+    [51] setVelocities() [50] 
+    [52] setRandomEdges() [50] 
+    [53] setDataFromJSON() [43], [56]
+    [54] setRandomPositions() [50]
+    [55] computeAcceleration() [50], [60]
+    [56] resetSteps() [50], [53]
+    [57] step() [47], [39]
+    [58] draw() [45], [46]
+    [59] getState() [47]
+    [60] getRate() [48], [55], [47]
+    [61] calculateClusters() [39], [62], [63], [64], [65]
+    [62] addClusterPoints() [61], [63]
+    [63] pointDistance() [61], [62]
+    [64] log2() [61]
+    [65] getRandomColor() [61]
