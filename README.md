@@ -17,4 +17,9 @@ If you run initialize without importing a data file it will generate random poin
 I have created the data file from my project were the nodes are the methods and edges are function calls
 
 Here is the initial state of the cluster
-![alt text](https://raw.githubusercontent.com/Tigran-teq-Tadevosyan/malmheden-algorithm/master/screenshots/first.png)
+![alt text](https://raw.githubusercontent.com/Tigran-teq-Tadevosyan/Cluster-Analysis/master/Screenshots/ClusterBefore.png)
+
+Here is the resulting cluster formation
+![alt text](https://raw.githubusercontent.com/Tigran-teq-Tadevosyan/Cluster-Analysis/master/Screenshots/ClusterAfter.png)
+
+Cluster is also described in text form in ./Sample Data/Analysis_Cluster.txt file
